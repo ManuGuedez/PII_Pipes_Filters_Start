@@ -1,28 +1,28 @@
 namespace CompAndDel
 {
-    public class PipeConditional : IPipe
+    public class PipeConditionalFork : IPipe
     {
-        private IPipe nextFalsePipe;
-        private IPipe nextTruePipe;
+        private IPipe falseConditionPipe;
+        private IPipe trueConditionPipe;
         private IConditionalFilter conditionalFilter;
 
 
-        public PipeConditional(IConditionalFilter filter, IPipe pipetrueCondition, IPipe pipeFalseCondition)
+        public PipeConditionalFork(IConditionalFilter filter, IPipe whenTrue, IPipe whenFalse)
         {
             this.conditionalFilter = filter;
-            this.nextTruePipe = pipetrueCondition;
-            this.nextFalsePipe = pipeFalseCondition;
+            this.trueConditionPipe = whenTrue;
+            this.falseConditionPipe = whenFalse;
         }
         
         public IPicture Send(IPicture picture)
         {
             if (this.conditionalFilter.Filter(picture))
             {
-                return this.nextTruePipe.Send(picture);
+                return this.trueConditionPipe.Send(picture);
             }
             else
             {
-                return this.nextFalsePipe.Send(picture);
+                return this.falseConditionPipe.Send(picture);
             }
         }
     }

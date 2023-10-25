@@ -12,29 +12,35 @@ namespace CompAndDel
             PictureProvider provider = new PictureProvider();
             IPicture picture = provider.GetPicture(@"beer.jpg");
 
-            IFilter filter = new FilterGreyscale();  
-            IFilter filter2 = new FilterNegative();
+            // Create filters for image processing
+            IFilter greyFilter = new FilterGreyscale();  
+            IFilter negativeFilter = new FilterNegative();
 
-            IPipe pipe0 = new PipeNull();
+            // Create a null pipe to terminate the serial pipe route
+            IPipe pipeNull = new PipeNull();
 
-            // Guardo con la primera transformación 
-            IFilter saveFilter1 = new SaveFilter("Filter1");
-            IPipe pipe1 = new PipeSerial(saveFilter1, pipe0);
-            IPipe pipe2 = new PipeSerial(filter2, pipe1);
+            IFilter saveNegativeFilter = new SaveFilter("Negative");
+            IPipe saveNegativePipe = new PipeSerial(saveNegativeFilter, pipeNull);
 
-            // Guardo la imagen con la segunda transformación
-            IFilter saveFilter2 = new SaveFilter("Filter2");
-            IPipe pipe3 = new PipeSerial(saveFilter2, pipe2);
+            IPipe negativeFilterPipe = new PipeSerial(negativeFilter, saveNegativePipe);
 
-            IFilter twitterFilter2 = new TwitterFilter();
-            IPipe twitterPipe = new PipeSerial(twitterFilter2, pipe0);
+            IFilter saveGreyscaleFilter = new SaveFilter("Greyscale");
+            
+            // In the case where the image doesn´t have a face
+            IPipe serialPipeWithoutFace = new PipeSerial(saveGreyscaleFilter, negativeFilterPipe);
 
-            IConditionalFilter conditionalFilter = new CondiotionalFilter();
-            IPipe conditionalPipe = new PipeConditional(conditionalFilter, twitterPipe, pipe3);
-            IPipe pipe4 = new PipeSerial(filter, conditionalPipe);
+            // In the case where the image has a face, send it to Twitter
+            IFilter twitterFilter = new TwitterFilter();
+            IPipe twitterPipe = new PipeSerial(twitterFilter, pipeNull);
+            
+            // Conditional pipe --> route to the correct pipe based on the conditional filter
+            IConditionalFilter conditionalFilter = new ConditionalFilter();
+            IPipe conditionalPipe = new PipeConditionalFork(conditionalFilter, twitterPipe, serialPipeWithoutFace);
 
-            IPicture result = pipe4.Send(picture);
-            provider.SavePicture(result, @"beer_with_both_filters.jpg");          
+            IPipe finalPipe = new PipeSerial(greyFilter, conditionalPipe);
+
+            IPicture finalResult = finalPipe.Send(picture);
+            provider.SavePicture(finalResult, @"finalImage.jpg");          
         }
     }
 }

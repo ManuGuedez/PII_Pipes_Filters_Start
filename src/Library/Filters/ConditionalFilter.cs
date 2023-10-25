@@ -3,7 +3,7 @@ using Ucu.Poo.Cognitive;
 
 namespace CompAndDel
 {
-    public class CondiotionalFilter : IConditionalFilter
+    public class ConditionalFilter : IConditionalFilter
     {
         public bool Filter(IPicture image)
         {

@@ -10,6 +10,7 @@ namespace CompAndDel
         {
             var twitter = new TwitterImage();
             p.SavePicture(image, @"TwitterFilter.jpg");
+            
             Console.WriteLine(twitter.PublishToTwitter("New post!", @"TwitterFilter.jpg"));
             return image;
         }
